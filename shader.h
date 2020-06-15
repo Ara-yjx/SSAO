@@ -2,6 +2,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#define KERNEL_SAMPLE 32
 
 class ShaderArg {
 public:
@@ -29,18 +30,17 @@ public:
 private: 
     unsigned int loadShader(std::string vert, std::string frag);
 
-    unsigned int firstShader;
-    unsigned int secondShader;
+    unsigned int geomShader;
+    unsigned int screenShader;
     unsigned int VAO, VBO, EBO, FBO, RBO;
     unsigned int quadVAO, quadVBO;
-    unsigned int gPosition, gColor;
+    unsigned int gPosition, gNormal;
 
     std::vector<float> vertices;
-    // std::vector<float> normals;
     std::vector<unsigned int> indices;
-    int verticesNum;
-    int normalsNum;
-    int trianglesNum;
+
+    std::vector<Eigen::Vector3f> kernel;
+
 
     int success;
     char infoLog[512];

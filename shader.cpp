@@ -2,11 +2,12 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
+// #include <fstream>
+// #include <sstream>
 #include <vector>
 #include <math.h>
-#include <algorithm>
+// #include <algorithm>
+#include <stdlib.h>
 #include "shader.h"
 #include "util.h"
 
@@ -30,6 +31,7 @@ const string SCREEN_VERT = "../screen.vert";
 const string SCREEN_FRAG = "../screen.frag";
 const string DEFAULT_MODEL = "../models/xbox.obj";
 const float PI = 3.14159265358979f;
+
 
 
 
@@ -146,8 +148,8 @@ unsigned int Shader::loadShader(string vert, string frag) {
 
 void Shader::initShader(ShaderArg* arg = nullptr) {
 
-    this->firstShader = loadShader(GEOM_VERT, GEOM_FRAG);
-    this->secondShader = loadShader(SCREEN_VERT, SCREEN_FRAG);
+    this->geomShader = loadShader(GEOM_VERT, GEOM_FRAG);
+    this->screenShader = loadShader(SCREEN_VERT, SCREEN_FRAG);
 
 
     glEnable(GL_DEPTH_TEST);
@@ -156,8 +158,6 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
 
 
     loadModel(DEFAULT_MODEL, vertices, indices);
-
-
     size_t stride = sizeof(float) * 6;
 
     // VBO
@@ -174,47 +174,48 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float) * 3)); // normal
     glEnableVertexAttribArray(1);
 
-
-    // EBO
-    glGenBuffers(1, &this->EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), (void*)indices.data(), GL_STATIC_DRAW);
+    // // EBO
+    // glGenBuffers(1, &this->EBO);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), (void*)indices.data(), GL_STATIC_DRAW);
 
 
     // FBO
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-    // glGenTextures(1, &gPosition);
-    // glBindTexture(GL_TEXTURE_2D, gPosition);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
-    glGenTextures(1, &gColor);
-    glBindTexture(GL_TEXTURE_2D, gColor);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 768, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 768, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gColor, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
 
 
 
-    unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, attachments);
-    // unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    // glDrawBuffers(2, attachments);
+    // unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
+    // glDrawBuffers(1, attachments);
+    unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
 
     // RBO (depth & stencil buffer)
     glGenRenderbuffers(1, &RBO);
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 768, 768);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 768, 768);
+    // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR Framebuffer error." << endl;
@@ -225,7 +226,7 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     //////////
 
 
-    GLfloat quadVertices[] = {
+    float quadVertices[] = {
         -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
         1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
@@ -240,6 +241,19 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+
+    //////////
+
+    // Generate kernel
+    while(this->kernel.size() < KERNEL_SAMPLE) {
+        Vector3f sample(random(-1,1), random(-1,1), random(0,1));
+        if(sample.norm() < 1) {
+            this->kernel.push_back(sample);
+        }
+    }
+
+    
 }
 
 
@@ -268,13 +282,15 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);   
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(this->firstShader);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glUseProgram(this->geomShader);
 
     // Set Uniform Params
-    // int colorParamLocation = glGetUniformLocation(firstShader, "colorParam");
+    // int colorParamLocation = glGetUniformLocation(geomShader, "colorParam");
     // glUniform1f(colorParamLocation, brightness);
-    int sceneRotationLocation = glGetUniformLocation(firstShader, "sceneRotation");
+    int sceneRotationLocation = glGetUniformLocation(geomShader, "sceneRotation");
     glUniform1f(sceneRotationLocation, sceneRotation);
+    
 
     // Draw
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
@@ -297,13 +313,17 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(this->secondShader);
+    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
+    glUseProgram(this->screenShader);
+    glUniform3fv(glGetUniformLocation(screenShader, "kernel"), KERNEL_SAMPLE, (float*)(this->kernel.data()));
+    glUniform1i(glGetUniformLocation(screenShader, "gPosition"), 0);
+    glUniform1i(glGetUniformLocation(screenShader, "gNormal"), 1);
 
     glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, gPosition);
-    // glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, gColor);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
 
     glBindVertexArray(quadVAO);
 

@@ -1,4 +1,5 @@
 #include <string>
+#include <stdlib.h>
 
 #ifndef UTIL_H
 #define UTIL_H
@@ -14,6 +15,11 @@ std::string fileToString(std::string filename) {
         std::cout<<"ERROR Opening file: "<<filename<<std::endl;
     }
     return str;
+}
+
+
+float random(float x, float y) {
+    return ((float) rand() / (RAND_MAX)) * (y-x) + x ;
 }
 
 #endif
