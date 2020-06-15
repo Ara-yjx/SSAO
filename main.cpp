@@ -17,7 +17,8 @@ public:
     float arrowYstate = 0;
     float bracketState = 0;
     float bracketStateSmooth = 0;
-    bool switchState = true;
+    bool switchState1 = true;
+    bool switchState2 = true;
     // nanogui::GLShader mShader;
     unsigned int shaderProgram;
     unsigned int VAO;
@@ -34,12 +35,6 @@ public:
         Slider *slider = new Slider(window);
         slider->setFixedSize(Vector2i(100, 20));
         slider->setValue(this->sliderValue);
-        
-        CheckBox *checkbox = new CheckBox(window, "SSAO");
-        checkbox->setFontSize(16);
-        checkbox->setChecked(this->switchState);
-
-        // Widget callback
         slider->setCallback([&](float value) {
             this->sliderValue = value;
             // cout << sliderValue << endl;
@@ -48,8 +43,18 @@ public:
             cout << "INFO slider value: " << value << endl;
         });
 
-        checkbox->setCallback([&](bool value) {
-            this->switchState = value;
+        CheckBox *checkbox1 = new CheckBox(window, "SSAO");
+        checkbox1->setFontSize(16);
+        checkbox1->setChecked(this->switchState1);
+        checkbox1->setCallback([&](bool value) {
+            this->switchState1 = value;
+        });
+
+        CheckBox *checkbox2 = new CheckBox(window, "filter");
+        checkbox2->setFontSize(16);
+        checkbox2->setChecked(this->switchState2);
+        checkbox2->setCallback([&](bool value) {
+            this->switchState2 = value;
         });
 
         initShader(new ShaderArg(envArg, objArg));
@@ -98,7 +103,7 @@ public:
     virtual void drawContents() {
         arrowXStateSmooth = arrowXStateSmooth * 0.9 + arrowXstate * 0.1;
         bracketStateSmooth = bracketStateSmooth * 0.9 + bracketState * 0.1;
-        updateShader(new ShaderArg(sliderValue, arrowXStateSmooth, arrowYstate, bracketStateSmooth, switchState));
+        updateShader(new ShaderArg(sliderValue, arrowXStateSmooth, arrowYstate, bracketStateSmooth, switchState1, switchState2));
 
     }
 

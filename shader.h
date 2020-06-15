@@ -12,15 +12,16 @@ public:
     float arrowXstate;
     float arrowYstate;
     float bracketState;
-    bool switchState;
+    bool switchState1;
+    bool switchState2;
     std::string argEnv;
     std::string argObj;
 
     ShaderArg() {};
     ShaderArg(std::string argEnv, std::string argObj)
     : argEnv(argEnv), argObj(argObj) {};
-    ShaderArg(float sliderValue, float arrowXstate, float arrowYstate, float bracketState, bool switchState) 
-    : sliderValue(sliderValue), arrowXstate(arrowXstate), arrowYstate(arrowYstate), bracketState(bracketState), switchState(switchState) {};
+    ShaderArg(float sliderValue, float arrowXstate, float arrowYstate, float bracketState, bool switchState1, bool switchState2) 
+    : sliderValue(sliderValue), arrowXstate(arrowXstate), arrowYstate(arrowYstate), bracketState(bracketState), switchState1(switchState1), switchState2(switchState2) {};
 };
 
 
