@@ -31,7 +31,7 @@ const string SCREEN_VERT = "../screen.vert";
 const string SCREEN_FRAG = "../screen.frag";
 const string FILTER_VERT = "../filter.vert";
 const string FILTER_FRAG = "../filter.frag";
-const string DEFAULT_MODEL = "../model/pyramid.obj";
+const string DEFAULT_MODEL = "../model/xbox.obj";
 const float PI = 3.14159265358979f;
 
 
@@ -383,6 +383,7 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(this->filterShader);
+    glUniform1i(glGetUniformLocation(filterShader, "ssaoSwitch"), arg->switchState ? 1 : 0);
     glUniform1i(glGetUniformLocation(filterShader, "gFilterOcclusion"), 0);
     glUniform1i(glGetUniformLocation(filterShader, "gFilterNormal"), 1);
 
