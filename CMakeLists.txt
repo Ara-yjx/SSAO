@@ -441,6 +441,12 @@ endif()
 # My program
 # add_library(sh STATIC include/sh/default_image.cc include/sh/spherical_harmonics.cc)
 # add_library(stb_image STATIC include/stb_image.c include/stb_image_resize.c)
+
+# set(ASSIMP_BUILD_ASSIMP_TOOLS "OFF")
+# set(ASSIMP_BUILD_TESTS "OFF")
+# add_subdirectory(assimp_src)
+# include_directories(assimp_src/include)
+
 add_executable(main main.cpp shader.h shader.cpp)
 target_link_libraries(main nanogui ${NANOGUI_EXTRA_LIBS})
 

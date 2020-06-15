@@ -36,7 +36,7 @@ private:
     unsigned int gPosition, gColor;
 
     std::vector<float> vertices;
-    std::vector<float> normals;
+    // std::vector<float> normals;
     std::vector<unsigned int> indices;
     int verticesNum;
     int normalsNum;
