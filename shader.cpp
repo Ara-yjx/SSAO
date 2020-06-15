@@ -253,6 +253,10 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
         }
     }
 
+    while(this->randomFloats.size() < RANDOM_FLOATS) {
+        this->randomFloats.push_back(random(0,1));
+    }
+
     
 }
 

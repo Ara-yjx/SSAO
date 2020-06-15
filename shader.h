@@ -2,7 +2,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+// consistent with screen.frag
 #define KERNEL_SAMPLE 32
+#define RANDOM_FLOATS 64
 
 class ShaderArg {
 public:
@@ -40,7 +42,7 @@ private:
     std::vector<unsigned int> indices;
 
     std::vector<Eigen::Vector3f> kernel;
-
+    std::vector<float> randomFloats;
 
     int success;
     char infoLog[512];
