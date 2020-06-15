@@ -44,6 +44,6 @@ void main()
     // homoNormal.z = (homoNormal.z - 1) / 2;
 
     Normal = homoNormal.xyz;
-    Position = homoPos.xyz + vec3(0,0,-10); // 
+    Position = homoPos.xyz + vec3(0,0,-10); // move z to [-11, -9] to be away from background (0)
     gl_Position = homoPos;
 }  

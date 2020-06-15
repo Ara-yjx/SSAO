@@ -21,35 +21,38 @@ vec3 rotatedKernelSample(vec3 samp, vec3 normal) {
 
 void main()
 {
-    float KERNEL_SIZE = 0.01;
+    float KERNEL_SIZE = 0.02;
     float brightness;
 
     vec3 normal = texture(gNormal, TexCoords).xyz;
     vec3 position = texture(gPosition, TexCoords).xyz;
 
-    float notOccluded = 0.0;
-    for(int i = 0; i < 32; i += 1) {
-        vec3 samplePosition = rotatedKernelSample(kernel[i], normal) * KERNEL_SIZE + position;
-        vec2 sampleTexCoord = vec2((samplePosition.x + 1) / 2, (samplePosition.y + 1) / 2);
-        if(samplePosition.z < texture(gPosition, sampleTexCoord.xy).z) { // sample depth < actual depth: visible 
-            notOccluded += 1;
-        }
-        // brightness = (samplePosition.z + 15)  / 10;
-        // brightness = (texture(gPosition, samplePosition.xy).z + 15)  / 10;
-        // brightness = (texture(gPosition, samplePosition.xy).z + 10);
-        // brightness = samplePosition.x;
-        // brightness = sampleTexCoord.x;
-    } 
-    brightness = notOccluded / 32.0;
+    if(position.z > -1) { // background
+        brightness = 0;
+    } else {
+
+        float notOccluded = 0.0;
+        for(int i = 0; i < 32; i += 1) {
+            vec3 samplePosition = rotatedKernelSample(kernel[i], normal) * KERNEL_SIZE + position;
+            vec2 sampleTexCoord = vec2((samplePosition.x + 1) / 2, (samplePosition.y + 1) / 2);
+            if(samplePosition.z < texture(gPosition, sampleTexCoord.xy).z) { // sample depth < actual depth: visible 
+                notOccluded += 1;
+            }
+            // brightness = (samplePosition.z + 15)  / 10;
+            // brightness = (texture(gPosition, samplePosition.xy).z + 15)  / 10;
+            // brightness = (texture(gPosition, samplePosition.xy).z + 10);
+            // brightness = samplePosition.x;
+            // brightness = sampleTexCoord.x;
+        } 
+        brightness = notOccluded / 32.0;
+
+    }
 
     // brightness = brightness * brightness * brightness;
 
     vec3 color = vec3(brightness);
 
     // color = (position.zzz + 10);
-    // color = TexCoords.xxx;
     // color = (texture(gPosition, TexCoords).zzz + 1) / 2 ;
     FragColor = vec4(color, 1.0f);
-    // FragColor = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-    // FragColor = vec4(1,1,1, 1.0);
 }
