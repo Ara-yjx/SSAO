@@ -1,6 +1,7 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 uniform float sceneRotation;
+out vec3 color;
 
 void main()
 {
@@ -14,4 +15,5 @@ void main()
     homoPos.xz = rotationMatrixY * homoPos.xz;
 
     gl_Position = homoPos;
+    color = vec3(abs(homoPos.x), abs(homoPos.y), abs(homoPos.z));
 }

@@ -89,6 +89,7 @@ public:
         arrowXStateSmooth = arrowXStateSmooth * 0.9 + arrowXstate * 0.1;
         bracketStateSmooth = bracketStateSmooth * 0.9 + bracketState * 0.1;
         updateShader(new ShaderArg(sliderValue, arrowXStateSmooth, arrowYstate, bracketStateSmooth));
+
     }
 
 };

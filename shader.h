@@ -27,10 +27,13 @@ public:
     virtual void updateShader(ShaderArg* arg);
 
 private: 
-    void loadShader();
+    unsigned int loadShader(std::string vert, std::string frag);
 
-    unsigned int shaderProgram;
-    unsigned int VAO, VBO, EBO;
+    unsigned int firstShader;
+    unsigned int secondShader;
+    unsigned int VAO, VBO, EBO, FBO, RBO;
+    unsigned int quadVAO, quadVBO;
+    unsigned int gPosition, gColor;
 
     std::vector<float> vertices;
     std::vector<float> normals;

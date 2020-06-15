@@ -1,11 +1,12 @@
 #version 330 core
 uniform float colorParam;
+in vec3 color;
 out vec4 FragColor;
 
 void main()
 {
 
-    vec3 color = vec3(0.5f, 0.5f, 0.5f);
+    // vec3 color = vec3(0.5f, 0.5f, 0.5f);
     float rho = colorParam;
     FragColor = vec4(color * rho, 0.5f);
 

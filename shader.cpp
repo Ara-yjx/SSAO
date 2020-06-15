@@ -22,17 +22,19 @@ using std::vector;
 using Eigen::Vector3f;
 using Eigen::Vector3d;
 
-const string VERTEX_SHADER_FILE = "../0.vert";
-const string FRAGMENT_SHADER_FILE = "../0.frag";
+const string GEOM_VERT = "../geom.vert";
+const string GEOM_FRAG = "../geom.frag";
+const string SCREEN_VERT = "../screen.vert";
+const string SCREEN_FRAG = "../screen.frag";
 const string DEFAULT_MODEL = "../model/round_star.obj";
 const float PI = 3.14159265358979f;
 
 
 
-void Shader::loadShader() {
+unsigned int Shader::loadShader(string vert, string frag) {
 
     // Vertex Shader
-    std::string vsSrc = fileToString(VERTEX_SHADER_FILE);
+    std::string vsSrc = fileToString(vert);
     const char* vertexShaderSource = vsSrc.c_str(); // convert to GLchar
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER); // create shader
@@ -46,7 +48,7 @@ void Shader::loadShader() {
     }
 
     // Fragment Shader
-    std::string fragmentShaderSourceString = fileToString(FRAGMENT_SHADER_FILE);
+    std::string fragmentShaderSourceString = fileToString(frag);
     const char* fragmentShaderSource = fragmentShaderSourceString.c_str();
     unsigned int fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -76,12 +78,16 @@ void Shader::loadShader() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    this->shaderProgram = shaderProgram;
+    return shaderProgram;
 }
 
 
 
 void Shader::initShader(ShaderArg* arg = nullptr) {
+
+    this->firstShader = loadShader(GEOM_VERT, GEOM_FRAG);
+    this->secondShader = loadShader(SCREEN_VERT, SCREEN_FRAG);
+
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -106,7 +112,7 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     };
     
     size_t stride = sizeof(float) * 3;
-    // cout<<"stride "<<stride<<endl;
+
     // VBO
     glGenBuffers(1, &(this->VBO)); // create a buffer object with ID
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO); // let the buffer be a VBO buffer 
@@ -114,26 +120,77 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     // glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
 
     // VAO
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
+    glGenVertexArrays(1, &this->VAO);
     glBindVertexArray(VAO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0); // position
     glEnableVertexAttribArray(0);
 
 
     // EBO
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
+    glGenBuffers(1, &this->EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
-
-    loadShader();
 
 
-    this->VAO = VAO;
-    this->EBO = EBO;
+    // FBO
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
+    // glGenTextures(1, &gPosition);
+    // glBindTexture(GL_TEXTURE_2D, gPosition);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+    glGenTextures(1, &gColor);
+    glBindTexture(GL_TEXTURE_2D, gColor);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 768, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gColor, 0);
+
+
+
+
+    unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
+    // unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    // glDrawBuffers(2, attachments);
+
+    // RBO (depth & stencil buffer)
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 768, 768);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR Framebuffer error." << endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    //////////
+
+
+    GLfloat quadVertices[] = {
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 }
 
 
@@ -150,24 +207,60 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     // glDepthFunc(GL_LESS);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+
+    ////////////////
+    //    GEOM    //
+    ////////////////
+    
+
+
+    glEnable(GL_DEPTH_TEST); 
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);   
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    /////////
-
-    glUseProgram(this->shaderProgram);
+    glUseProgram(this->firstShader);
 
     // Set Uniform Params
-    int colorParamLocation = glGetUniformLocation(shaderProgram, "colorParam");
-    glUniform1f(colorParamLocation, brightness);
-    int sceneRotationLocation = glGetUniformLocation(shaderProgram, "sceneRotation");
+    // int colorParamLocation = glGetUniformLocation(firstShader, "colorParam");
+    // glUniform1f(colorParamLocation, brightness);
+    int sceneRotationLocation = glGetUniformLocation(firstShader, "sceneRotation");
     glUniform1f(sceneRotationLocation, sceneRotation);
-    
+
     // Draw
-    glBindBuffer(GL_ARRAY_BUFFER, this->VBO); // let the buffer be a VBO buffer 
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
     glBindVertexArray(this->VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 6); // draw triangles without EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+
+
+
+    ////////////////
+    //   SCREEN   //
+    ////////////////
+
+
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(this->secondShader);
+
+
+    glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, gPosition);
+    // glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gColor);
+
+    glBindVertexArray(quadVAO);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+
 
 }
 
