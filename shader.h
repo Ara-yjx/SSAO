@@ -41,7 +41,7 @@ private:
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
 
-    std::vector<Eigen::Vector3f> kernel;
+    std::vector<float> kernel;
     std::vector<float> randomFloats;
 
     int success;

@@ -29,7 +29,7 @@ const string GEOM_VERT = "../geom.vert";
 const string GEOM_FRAG = "../geom.frag";
 const string SCREEN_VERT = "../screen.vert";
 const string SCREEN_FRAG = "../screen.frag";
-const string DEFAULT_MODEL = "../models/xbox.obj";
+const string DEFAULT_MODEL = "../model/pyramid.obj";
 const float PI = 3.14159265358979f;
 
 
@@ -187,16 +187,16 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     glGenTextures(1, &gPosition);
     glBindTexture(GL_TEXTURE_2D, gPosition);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
     glGenTextures(1, &gNormal);
     glBindTexture(GL_TEXTURE_2D, gNormal);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
     // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 768, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
@@ -246,10 +246,12 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     //////////
 
     // Generate kernel
-    while(this->kernel.size() < KERNEL_SAMPLE) {
+    while(this->kernel.size() < KERNEL_SAMPLE * 3) {
         Vector3f sample(random(-1,1), random(-1,1), random(0,1));
         if(sample.norm() < 1) {
-            this->kernel.push_back(sample);
+            this->kernel.push_back(sample.x());
+            this->kernel.push_back(sample.y());
+            this->kernel.push_back(sample.z());
         }
     }
 
@@ -320,7 +322,7 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     glUseProgram(this->screenShader);
-    glUniform3fv(glGetUniformLocation(screenShader, "kernel"), KERNEL_SAMPLE, (float*)(this->kernel.data()));
+    glUniform3fv(glGetUniformLocation(screenShader, "kernel"), KERNEL_SAMPLE*3, (float*)(this->kernel.data()));
     glUniform1i(glGetUniformLocation(screenShader, "gPosition"), 0);
     glUniform1i(glGetUniformLocation(screenShader, "gNormal"), 1);
 

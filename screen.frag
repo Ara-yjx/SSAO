@@ -12,13 +12,20 @@ uniform float randomFloats[64];
 vec3 rotatedKernelSample(vec3 samp, vec3 normal, mat2 kernelRotation) {
 
     vec3 sampleR = samp;
+    //  sampleR = vec3(0,0,1);
     sampleR.xy = kernelRotation * sampleR.xy;
 
-    // R * (0,0,1) = normal(x,y,z)
+    // R * (0,0,1) -> normal(x,y,z)
+    // R * (1,0,0) -> (1,0,0)
+    // R * (0,1,0) -> normal x (1,0,0)
     // thus rotate around (0,0,1)x(x,y,z)
-    vec3 axis = cross(vec3(0,0,1), normal);
+
+    vec3 axis = cross(vec3(0.0,0.0,1.0), normal);
     float theta = acos(normal.z);
     vec3 rotatedSample = sampleR * normal.z + cross(axis, sampleR) * sin(theta) + dot(axis, sampleR) * axis * (1 - normal.z);
+
+    // vec3 rotatedSample = vec3(sampleR.x, 0, 0) + sampleR.y * cross(normal, vec3(1,0,0)) + sampleR.z * normal;
+
     return rotatedSample;
     // return vec3(0,0,1) * normal.z + cross(axis, vec3(0,0,1)) * sin(theta) + dot(axis, vec3(0,0,1)) * axis * (1 - normal.z);
 }
@@ -57,6 +64,7 @@ void main()
             // brightness = sampleTexCoord.x;
         } 
         brightness = notOccluded / KERNEL_SAMPLE;
+        // if(brightness < 1) brightness = 0.2;
 
     }
 
