@@ -17,7 +17,7 @@ public:
     float arrowYstate = 0;
     float bracketState = 0;
     float bracketStateSmooth = 0;
-    bool switchState = false;
+    bool switchState = true;
     // nanogui::GLShader mShader;
     unsigned int shaderProgram;
     unsigned int VAO;

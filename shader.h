@@ -3,8 +3,8 @@
 #define SHADER_H
 
 // consistent with screen.frag
-#define KERNEL_SAMPLE 32
-#define RANDOM_FLOATS 64
+#define KERNEL_SAMPLE 64
+#define RANDOM_FLOATS 320
 
 class ShaderArg {
 public:

@@ -1,7 +1,5 @@
 #version 410 core
 
-// layout (location = 0) out vec3 gPosition;
-// layout (location = 1) out vec3 gColor;
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
 // out vec4 FragColor;
