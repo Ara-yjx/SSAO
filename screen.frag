@@ -1,6 +1,8 @@
 #version 410 core
-out vec4 FragColor;
 in vec2 TexCoords;
+
+layout (location = 0) out vec3 filterOcclusion;
+layout (location = 1) out vec3 filterNormal;
 
 // uniform sampler2D gPosition;
 uniform sampler2D gPosition;
@@ -74,5 +76,7 @@ void main()
 
     // color = (position.zzz + 10);
     // color = (texture(gPosition, TexCoords).zzz + 1) / 2 ;
-    FragColor = vec4(color, 1.0f);
+    // FragColor = vec4(color, 1.0f);
+    filterOcclusion = color;
+    filterNormal = normal;
 }

@@ -29,6 +29,8 @@ const string GEOM_VERT = "../geom.vert";
 const string GEOM_FRAG = "../geom.frag";
 const string SCREEN_VERT = "../screen.vert";
 const string SCREEN_FRAG = "../screen.frag";
+const string FILTER_VERT = "../filter.vert";
+const string FILTER_FRAG = "../filter.frag";
 const string DEFAULT_MODEL = "../model/pyramid.obj";
 const float PI = 3.14159265358979f;
 
@@ -150,6 +152,7 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
 
     this->geomShader = loadShader(GEOM_VERT, GEOM_FRAG);
     this->screenShader = loadShader(SCREEN_VERT, SCREEN_FRAG);
+    this->filterShader = loadShader(FILTER_VERT, FILTER_FRAG);
 
 
     glEnable(GL_DEPTH_TEST);
@@ -201,9 +204,6 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
-
-
-
     // unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
     // glDrawBuffers(1, attachments);
     unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -216,6 +216,43 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
     // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 768, 768);
     // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR Framebuffer error." << endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    //////////
+
+
+
+    // Filter FBO
+    glGenFramebuffers(1, &filterFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, filterFBO);
+
+    glGenTextures(1, &gFilterOcclusion);
+    glBindTexture(GL_TEXTURE_2D, gFilterOcclusion);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gFilterOcclusion, 0);
+
+    glGenTextures(1, &gFilterNormal);
+    glBindTexture(GL_TEXTURE_2D, gFilterNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 768, 768, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gFilterNormal, 0);
+
+    unsigned int filterAttachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, filterAttachments);
+
+    // Filter RBO
+    glGenRenderbuffers(1, &filterRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, filterRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 768, 768);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, filterRBO);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR Framebuffer error." << endl;
@@ -244,6 +281,7 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
 
 
     //////////
+
 
     // Generate kernel
     while(this->kernel.size() < KERNEL_SAMPLE * 3) {
@@ -304,7 +342,6 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // draw triangles without EBO
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
     // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
     glBindVertexArray(0);
 
 
@@ -315,10 +352,9 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
 
 
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, filterFBO);
     glDisable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     glUseProgram(this->screenShader);
@@ -332,10 +368,32 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glBindTexture(GL_TEXTURE_2D, gNormal);
 
     glBindVertexArray(quadVAO);
-
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 
+
+
+    ////////////////
+    //   FILTER   //
+    ////////////////
+
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(this->filterShader);
+    glUniform1i(glGetUniformLocation(filterShader, "gFilterOcclusion"), 0);
+    glUniform1i(glGetUniformLocation(filterShader, "gFilterNormal"), 1);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gFilterOcclusion);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gFilterNormal);
+
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
 
 }
 

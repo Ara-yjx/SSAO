@@ -34,9 +34,10 @@ private:
 
     unsigned int geomShader;
     unsigned int screenShader;
-    unsigned int VAO, VBO, EBO, FBO, RBO;
+    unsigned int filterShader;
+    unsigned int VAO, VBO, EBO, FBO, RBO, filterFBO, filterRBO;
     unsigned int quadVAO, quadVBO;
-    unsigned int gPosition, gNormal;
+    unsigned int gPosition, gNormal, gFilterOcclusion, gFilterNormal;
 
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
