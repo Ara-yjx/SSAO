@@ -41,6 +41,7 @@ e.g.
 <br/>
 
 
+
 # Project Introduction
 
 This program performs Screen Space Ambient Occlusion, with kernel rotation and filtering.
@@ -77,4 +78,10 @@ This program performs Screen Space Ambient Occlusion, with kernel rotation and f
     Dark stripes can be reduced by filtering.
 
 
+## Results
 
+SSAO off / SSAO with filter / SSAO without filter
+
+![Alt text](/result/screenshot0.png "SSAO off")
+![Alt text](/result/screenshot1.png "SSAO with filter")
+![Alt text](/result/screenshot2.png "SSAO without filter")
