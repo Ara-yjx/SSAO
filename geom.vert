@@ -8,6 +8,8 @@ layout (location = 1) out vec3 Normal;
 // layout (location = 2) out vec3 Normal;
 
 uniform float sceneRotation;
+uniform float sceneScale;
+
 
 
 void main()
@@ -16,6 +18,7 @@ void main()
     vec4 homoNormal = vec4(in_Normal, 0.0);
 
 
+    homoPos.xyz = homoPos.xyz * sceneScale;
 
     float thetaY = sceneRotation;
     mat2 rotationMatrixY = mat2(

@@ -13,6 +13,7 @@ void main()
 {
     int FILTERSAMPLE = 4;
     float FILTERSIZE = 0.02;
+    float SPACE_RELATIVE_WEIGHT = 2;
     float E = 2.71828f;
     
 
@@ -33,7 +34,7 @@ void main()
                 float sampleColor = texture(gFilterOcclusion, sampleCoords).x;
                 float spaceWeightExp = - (dx * dx + dy * dy);
                 float colorWeightExp = - (occlusion - sampleColor) * (occlusion - sampleColor);
-                float weight = pow(E, spaceWeightExp + colorWeightExp);
+                float weight = pow(E, spaceWeightExp * SPACE_RELATIVE_WEIGHT + colorWeightExp);
                 totalWeight += weight;
                 totalValue += weight * sampleColor;
             }

@@ -8,6 +8,7 @@
 #include <math.h>
 // #include <algorithm>
 #include <stdlib.h>
+#include <math.h>
 #include "shader.h"
 #include "util.h"
 
@@ -47,8 +48,8 @@ void loadModel(string modelFile, vector<float>& vertices, vector<unsigned int>& 
 
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelFile.c_str());
 
-    if (!warn.empty()) 
-        std::cout << warn << std::endl;
+    // if (!warn.empty()) 
+    //     std::cout << warn << std::endl;
     if (!err.empty()) 
         std::cerr << err << std::endl;
     if (!ret) {
@@ -159,8 +160,10 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     glDepthFunc(GL_LESS);
     // glDisable(GL_CULL_FACE);
 
-
-    loadModel(DEFAULT_MODEL, vertices, indices);
+    if(arg->argObj.length())
+        loadModel(arg->argObj, vertices, indices);
+    else
+        loadModel(DEFAULT_MODEL, vertices, indices);
     size_t stride = sizeof(float) * 6;
 
     // VBO
@@ -309,6 +312,7 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     const float rotationRate = 0.3;
     float brightness = arg->sliderValue;
     float sceneRotation = - arg->arrowXstate * rotationRate;
+    float sceneScale = pow(1.1, arg->arrowYstate);
 
     if(arg) delete arg;
 
@@ -332,11 +336,10 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glUseProgram(this->geomShader);
 
     // Set Uniform Params
-    // int colorParamLocation = glGetUniformLocation(geomShader, "colorParam");
-    // glUniform1f(colorParamLocation, brightness);
     int sceneRotationLocation = glGetUniformLocation(geomShader, "sceneRotation");
     glUniform1f(sceneRotationLocation, sceneRotation);
-    
+    int sceneScaleLocation = glGetUniformLocation(geomShader, "sceneScale");
+    glUniform1f(sceneScaleLocation, sceneScale);
 
     // Draw
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO);

@@ -26,22 +26,22 @@ public:
     
     Shader* shader;
 
-    App(std::string envArg, std::string objArg) : Screen(Eigen::Vector2i(768, 768), "PRT"), Shader() {
+    App(std::string objArg) : Screen(Eigen::Vector2i(768, 768), "PRT"), Shader() {
 
-        Window* window = new Window(this, "Brightness");
+        Window* window = new Window(this, "-");
         window->setPosition(Vector2i(15, 15));
         window->setLayout(new GroupLayout());
 
-        Slider *slider = new Slider(window);
-        slider->setFixedSize(Vector2i(100, 20));
-        slider->setValue(this->sliderValue);
-        slider->setCallback([&](float value) {
-            this->sliderValue = value;
-            // cout << sliderValue << endl;
-        });
-        slider->setFinalCallback([&](float value) {
-            cout << "INFO slider value: " << value << endl;
-        });
+        // Slider *slider = new Slider(window);
+        // slider->setFixedSize(Vector2i(100, 20));
+        // slider->setValue(this->sliderValue);
+        // slider->setCallback([&](float value) {
+        //     this->sliderValue = value;
+        //     // cout << sliderValue << endl;
+        // });
+        // slider->setFinalCallback([&](float value) {
+        //     cout << "INFO slider value: " << value << endl;
+        // });
 
         CheckBox *checkbox1 = new CheckBox(window, "SSAO");
         checkbox1->setFontSize(16);
@@ -57,7 +57,7 @@ public:
             this->switchState2 = value;
         });
 
-        initShader(new ShaderArg(envArg, objArg));
+        initShader(new ShaderArg(objArg));
     }
 
 
@@ -111,23 +111,14 @@ public:
 
 
 int main(int argc, char const *argv[]) {
-    std::string envArg, objArg;
-    try {    
-        for(int i = 0; i < argc; i++) {
-            std::string argType(argv[i]);
-            if(argType == "-e") 
-                envArg = std::string(argv[i+1]);
-            if(argType == "-o") 
-                objArg = std::string(argv[i+1]);
-        }
-    } catch(const std::exception& e) {
-        std::cerr << "ERROR: invalid argument format. Should be $ ./main -e <envmap_file> -o <object_file>" << '\n';
-    }
-
+    std::string objArg;
+    if(argc > 1)  
+        objArg = std::string(argv[1]);
+    
 
     nanogui::init();
 
-    App* screen = new App(envArg, objArg);
+    App* screen = new App(objArg);
 
     // Launch window
     screen->setVisible(true);
