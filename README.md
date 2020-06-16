@@ -1,3 +1,10 @@
+# SSAO
+
+by Jiaxi Ye
+
+CS291A Project 4
+
+
 # Usage
 
 ## Compilation
@@ -17,7 +24,7 @@ In the project root directory,
 
 In the project `/build` directory,
 
-`$ ./main [path_to_obj_file]`
+`$ ./main [path_to_obj_file(optional)]`
 
 e.g.
 
@@ -34,29 +41,39 @@ e.g.
 <br/>
 
 
-# About this project
+# Project Introduction
+
+This program performs Screen Space Ambient Occlusion, with kernel rotation and filtering.
+
 
 ## Rendering Process
 
-1. Geometric Shader : generate positions (depths) and normals
+1. Geometric Shader: 
 
-2. Screen Shader: do SSAO, compute the occlusion factors
+    Transform objects. Rasterize the scene.   
+    Generate positions (depths) and normals.
 
-3. Filter Shader: apply bilateral filter to occlusion factors; blend diffuse and ambient shading
+2. Screen Shader: 
+    
+    Perform SSAO to compute the occlusion factors of each pixel. 
+    The kernel has 64 sampling points, randomly distributed within a hemisphere of radius 0.02 (in screen space). It is randomly rotated at each pixel.
+
+3. Filter Shader: 
+
+    Apply bilateral filter to occlusion factors.  
+    Do the shading of diffuse and ambient light, and then blend with the occlusion factor.
 
 
 ## Artifacts observed
 
 - Halo. 
 
-    Slight halo is observed.
-
+    Slight halo is observed.  
     Also, it's observed that the halo becomes less obvious when the size of SSAO sample kernel gets smaller.
 
 - Dark stripes.
 
-    I suppose this problem is because of my implementation, but I cannot figure out how to fix this completely.
-
+    I suppose this problem is because of my implementation, but I cannot figure out how to fix this completely.  
     Dark stripes can be reduced by filtering.
 
 
