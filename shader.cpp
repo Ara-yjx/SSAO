@@ -207,8 +207,6 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
-    // unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 };
-    // glDrawBuffers(1, attachments);
     unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
 
@@ -227,7 +225,6 @@ void Shader::initShader(ShaderArg* arg = nullptr) {
 
 
     //////////
-
 
 
     // Filter FBO
@@ -322,11 +319,11 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 
+
     ////////////////
     //    GEOM    //
     ////////////////
     
-
 
     glEnable(GL_DEPTH_TEST); 
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);   
@@ -354,7 +351,6 @@ void Shader::updateShader(ShaderArg* arg = nullptr) {
     ////////////////
     //   SCREEN   //
     ////////////////
-
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, filterFBO);

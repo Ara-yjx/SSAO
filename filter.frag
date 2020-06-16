@@ -12,7 +12,7 @@ uniform sampler2D gFilterNormal;
 void main() 
 {
     int FILTERSAMPLE = 4;
-    float FILTERSIZE = 0.02;
+    float FILTERSIZE = 0.01;
     float SPACE_RELATIVE_WEIGHT = 2;
     float E = 2.71828f;
     
@@ -56,8 +56,4 @@ void main()
         FragColor = vec4(vec3(ambient + diffuse), 1);
     }
 
-    // FragColor = vec4(occlusion,1);
-    // FragColor = vec4(normal,1);
-
-    // FragColor = vec4(vec3(length(texture(gFilterNormal, TexCoords))),1);
 }

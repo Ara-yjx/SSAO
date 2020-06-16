@@ -5,7 +5,6 @@ layout (location = 1) in vec3 in_Normal;
 
 layout (location = 0) out vec3 Position;
 layout (location = 1) out vec3 Normal;
-// layout (location = 2) out vec3 Normal;
 
 uniform float sceneRotation;
 uniform float sceneScale;
@@ -39,12 +38,7 @@ void main()
     // );
     // homoNormal = persp * homoNormal;
     // homoPos = persp * homoPos;
-    // // 0.5~10, z=10-5/z=
 
-    // // homoPos.z = (homoPos.z - 5) / 15;
-    // homoPos = homoPos / 10;
-
-    // homoNormal.z = (homoNormal.z - 1) / 2;
 
     Normal = homoNormal.xyz;
     Position = homoPos.xyz + vec3(0,0,-10); // move z to [-11, -9] to be away from background (0)

@@ -38,6 +38,12 @@ e.g.
 - Up / Down arrow keys: scale
 
 
+## Models
+
+- Several simple model files are provided in `/model`.
+
+
+
 <br/>
 
 
@@ -69,19 +75,22 @@ This program performs Screen Space Ambient Occlusion, with kernel rotation and f
 
 - Halo. 
 
-    Slight halo is observed.  
+    Slight halo is observed along object edges of two areas with highly different depth value.  
     Also, it's observed that the halo becomes less obvious when the size of SSAO sample kernel gets smaller.
 
-- Dark stripes.
+- Dark stripes (fixed).
 
-    I suppose this problem is because of my implementation, but I cannot figure out how to fix this completely.  
-    Dark stripes can be reduced by filtering.
+    Dark stripes problem has been fixed by offsetting the sample kernel by a tiny constant distance (0.01) along the normal direction.  
+    Thank you, Pf. Yan!
 
 
 ## Results
 
-SSAO off / SSAO with filter / SSAO without filter
+![Alt text](/result/off.png "SSAO off")
+SSAO off
 
-![Alt text](/result/screenshot0.png "SSAO off")
-![Alt text](/result/screenshot1.png "SSAO with filter")
-![Alt text](/result/screenshot2.png "SSAO without filter")
+![Alt text](/result/ssao_filtered.png "SSAO with filter")
+SSAO with filter
+
+![Alt text](/result/ssao_unfiltered.png "SSAO without filter")
+SSAO without filter

@@ -61,7 +61,7 @@ void main()
             // vec3 samp = vec3((sampx - 1.5) / 2, (sampy - 1.5) / 2, sampz / 4.0);
             // samp = vec3(0,0,1);
 
-            vec3 samplePosition = rotatedKernelSample(samp, normal, kernelRotation) * KERNEL_SIZE + position;
+            vec3 samplePosition = rotatedKernelSample(samp, normal, kernelRotation) * KERNEL_SIZE + position + normal * 0.01; // numerical fix to remove black stripes
             vec2 sampleTexCoord = vec2((samplePosition.x + 1.0) / 2.0, (samplePosition.y + 1.0) / 2.0);
             if(samplePosition.z < texture(gPosition, sampleTexCoord.xy).z) { // sample depth < actual depth: visible 
                 notOccluded += 1;
